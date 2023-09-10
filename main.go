@@ -6,16 +6,19 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"image/color"
 	"log"
+	"math/rand"
+	"time"
 )
 
 const (
 	screenWidth  = 450
 	screenHeight = 300
+
+	randomMoves = 20
 )
 
 var (
 	whiteImage = ebiten.NewImage(3, 3)
-	// whiteSubImage = whiteImage.SubImage(image.Rect(1, 1, 2, 2)).(*ebiten.Image)
 )
 
 var megaminx Megaminx
@@ -23,9 +26,9 @@ var megaminx Megaminx
 var selectors = make([][]ebiten.Vertex, 12)
 
 func init() {
+	rand.Seed(time.Now().UnixNano()) // seed random number generator for randomizer
 	whiteImage.Fill(color.White)
 	megaminx = NewMegaminx()
-	//megaminx.CCW(3)
 }
 
 type Game struct {
@@ -56,8 +59,13 @@ func (g *Game) Update() error {
 		megaminx.CCW(g.selected)
 	}
 
+	if inpututil.IsKeyJustPressed(ebiten.KeyT) {
+		megaminx = NewMegaminx()
+		randomize(randomMoves)
+	}
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyR) {
-		randomize(20)
+		megaminx = NewMegaminx()
 	}
 	return nil
 }
@@ -66,7 +74,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	drawFaces(screen, float32(18))
 	drawSelectors(screen)
 	drawMarker(screen, g.selected)
-	ebitenutil.DebugPrint(screen, "Megaminx Viewer")
+
+	ebitenutil.DebugPrintAt(screen, "To restart, press R", 5, 260)
+	ebitenutil.DebugPrintAt(screen, "To restart and randomize, press T", 5, 280)
+
+	ebitenutil.DebugPrintAt(screen, "Clockwise: left arrow", 250, 280)
+	ebitenutil.DebugPrintAt(screen, "Counter-clockwise: right arrow", 250, 260)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {

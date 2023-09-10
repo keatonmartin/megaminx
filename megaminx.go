@@ -25,8 +25,7 @@ var numToColor = map[int]color.RGBA{
 }
 
 type Megaminx struct {
-	faces       [12]Face
-	top, bottom int
+	faces [12]Face
 }
 
 type Face struct {
@@ -41,9 +40,6 @@ type Edge struct {
 
 func NewMegaminx() Megaminx {
 	m := Megaminx{}
-
-	m.top = 0
-	m.bottom = 6
 
 	// white face
 	m.faces[0] = Face{

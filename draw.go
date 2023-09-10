@@ -36,16 +36,6 @@ func translateVertices(vs []ebiten.Vertex, x, y float32) {
 	}
 }
 
-// reflectVertices reflects the vertics in vs over y = -x
-func reflectVertices(vs []ebiten.Vertex) {
-	for i := range vs {
-		x := vs[i].DstX
-		y := vs[i].DstY
-		vs[i].DstX = -y
-		vs[i].DstY = -x
-	}
-}
-
 func reflectVerticesOverY(vs []ebiten.Vertex) {
 	for i := range vs {
 		vs[i].DstX = -vs[i].DstX
@@ -62,7 +52,7 @@ func drawSelectors(screen *ebiten.Image) {
 	path.Close()
 
 	vs, is := path.AppendVerticesAndIndicesForFilling(nil, nil)
-	translateVertices(vs, 100, 10)
+	translateVertices(vs, 80, 10)
 
 	op := &ebiten.DrawTrianglesOptions{}
 	op.AntiAlias = true
@@ -219,25 +209,30 @@ func drawTopHalf(screen *ebiten.Image, scale float32) {
 
 	tLeftVs := make([]ebiten.Vertex, n)
 	copy(tLeftVs, vs)
-	rotateVertices(tLeftVs, math.Pi*1.8)
+	rotateVertices(tLeftVs, math.Pi*0.2)
+	reflectVerticesOverY(tLeftVs)
 	translateVertices(tLeftVs, screenWidth/2, screenHeight/2)
+
 	translateVertices(tLeftVs, scale*-1.95, scale*-2.7)
 
 	tRightVs := make([]ebiten.Vertex, n)
 	copy(tRightVs, vs)
-	rotateVertices(tRightVs, math.Pi*2.2)
+	rotateVertices(tRightVs, math.Pi*-0.2)
+	reflectVerticesOverY(tRightVs)
 	translateVertices(tRightVs, screenWidth/2, screenHeight/2)
 	translateVertices(tRightVs, scale*1.95, scale*-2.7)
 
 	bLeftVs := make([]ebiten.Vertex, n)
 	copy(bLeftVs, vs)
-	rotateVertices(bLeftVs, math.Pi*3.1)
-	reflectVertices(bLeftVs)
+	rotateVertices(bLeftVs, math.Pi*0.6)
+	reflectVerticesOverY(bLeftVs)
 	translateVertices(bLeftVs, screenWidth/2, screenHeight/2)
+
 	translateVertices(bLeftVs, scale*-3.18, scale)
 
 	bRightVs := make([]ebiten.Vertex, n)
 	copy(bRightVs, vs)
+	reflectVerticesOverY(bRightVs)
 	rotateVertices(bRightVs, math.Pi*.6)
 	translateVertices(bRightVs, screenWidth/2, screenHeight/2)
 	translateVertices(bRightVs, scale*3.18, scale)
@@ -289,25 +284,30 @@ func drawBottomHalf(screen *ebiten.Image, scale float32) {
 
 	tLeftVs := make([]ebiten.Vertex, n)
 	copy(tLeftVs, vs)
-	rotateVertices(tLeftVs, math.Pi*1.8)
+	rotateVertices(tLeftVs, math.Pi*0.2)
+	reflectVerticesOverY(tLeftVs)
 	translateVertices(tLeftVs, screenWidth/2, screenHeight/2)
+
 	translateVertices(tLeftVs, scale*-1.95, scale*-2.7)
 
 	tRightVs := make([]ebiten.Vertex, n)
 	copy(tRightVs, vs)
-	rotateVertices(tRightVs, math.Pi*2.2)
+	rotateVertices(tRightVs, math.Pi*-0.2)
+	reflectVerticesOverY(tRightVs)
 	translateVertices(tRightVs, screenWidth/2, screenHeight/2)
 	translateVertices(tRightVs, scale*1.95, scale*-2.7)
 
 	bLeftVs := make([]ebiten.Vertex, n)
 	copy(bLeftVs, vs)
-	rotateVertices(bLeftVs, math.Pi*3.1)
-	reflectVertices(bLeftVs)
+	rotateVertices(bLeftVs, math.Pi*0.6)
+	reflectVerticesOverY(bLeftVs)
 	translateVertices(bLeftVs, screenWidth/2, screenHeight/2)
+
 	translateVertices(bLeftVs, scale*-3.18, scale)
 
 	bRightVs := make([]ebiten.Vertex, n)
 	copy(bRightVs, vs)
+	reflectVerticesOverY(bRightVs)
 	rotateVertices(bRightVs, math.Pi*.6)
 	translateVertices(bRightVs, screenWidth/2, screenHeight/2)
 	translateVertices(bRightVs, scale*3.18, scale)
