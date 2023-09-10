@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -13,8 +14,6 @@ import (
 const (
 	screenWidth  = 450
 	screenHeight = 300
-
-	randomMoves = 20
 )
 
 var (
@@ -25,7 +24,13 @@ var megaminx Megaminx
 
 var selectors = make([][]ebiten.Vertex, 12)
 
+var rotations int
+
 func init() {
+
+	rot := flag.Int("rotations", 20, "the number of clockwise rotations made when randomizing the puzzle")
+	flag.Parse()
+	rotations = *rot
 	rand.Seed(time.Now().UnixNano()) // seed random number generator for randomizer
 	whiteImage.Fill(color.White)
 	megaminx = NewMegaminx()
@@ -61,7 +66,7 @@ func (g *Game) Update() error {
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyT) {
 		megaminx = NewMegaminx()
-		randomize(randomMoves)
+		randomize(rotations)
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyR) {
