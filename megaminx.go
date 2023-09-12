@@ -24,8 +24,11 @@ var numToColor = map[int]color.RGBA{
 	11: {0xf3, 0xe5, 0xab, 0xff}, // vanilla
 }
 
+type State [12][10]int
+
 type Megaminx struct {
 	faces [12]Face
+	state State
 }
 
 type Face struct {
@@ -38,8 +41,21 @@ type Edge struct {
 	colors [3]int // array of indices into tiles in Face
 }
 
+// NewState generates the start state
+func NewState() State {
+	var s State
+	for i := 0; i < 12; i++ {
+		for j := 0; j < 10; j++ {
+			s[i][j] = i
+		}
+	}
+	return s
+}
+
 func NewMegaminx() Megaminx {
-	m := Megaminx{}
+
+	s := NewState()
+	m := Megaminx{state: s}
 
 	// white face
 	m.faces[0] = Face{
@@ -190,7 +206,7 @@ func NewMegaminx() Megaminx {
 func (m *Megaminx) CCW(face int) {
 	// shift tiles on face
 	for i := 0; i < 2; i++ {
-		m.faces[face].shiftTilesRight()
+		m.state.shiftTilesRight(face)
 	}
 
 	adjFace := m.faces[face].adj[4].color // get last adjacent face
@@ -198,7 +214,7 @@ func (m *Megaminx) CCW(face int) {
 	adjTiles := m.faces[adjFace].adj[adjRow].colors
 	endTileColors := make([]int, 3)
 	for i := range adjTiles {
-		endTileColors[i] = m.faces[adjFace].tiles[adjTiles[i]]
+		endTileColors[i] = m.state[adjFace][adjTiles[i]]
 	}
 	var endColors [3]int
 	copy(endColors[:], endTileColors)
@@ -209,7 +225,7 @@ func (m *Megaminx) CCW(face int) {
 		prevAdjTiles := m.faces[prevFace].adj[prevAdjRow].colors
 		prevTileColors := make([]int, 3)
 		for j := range prevAdjTiles {
-			prevTileColors[j] = m.faces[prevFace].tiles[prevAdjTiles[j]]
+			prevTileColors[j] = m.state[prevFace][prevAdjTiles[j]]
 		}
 
 		curFace := m.faces[face].adj[i].color
@@ -217,14 +233,14 @@ func (m *Megaminx) CCW(face int) {
 		curAdjTiles := m.faces[curFace].adj[curAdjRow].colors
 
 		for k, j := range curAdjTiles {
-			m.faces[curFace].tiles[j] = prevTileColors[k]
+			m.state[curFace][j] = prevTileColors[k]
 		}
 	}
 	startFace := m.faces[face].adj[0].color
 	startAdjRow := m.outerIndex(face, startFace)
 	startAdjTiles := m.faces[startFace].adj[startAdjRow].colors
 	for k, j := range startAdjTiles {
-		m.faces[startFace].tiles[j] = endColors[k]
+		m.state[startFace][j] = endColors[k]
 	}
 
 }
@@ -232,7 +248,7 @@ func (m *Megaminx) CCW(face int) {
 func (m *Megaminx) CW(face int) {
 	// shift tiles on face
 	for i := 0; i < 2; i++ {
-		m.faces[face].shiftTilesLeft()
+		m.state.shiftTilesLeft(face)
 	}
 
 	// get first adjacent face color
@@ -247,7 +263,7 @@ func (m *Megaminx) CW(face int) {
 	// create a copy of them
 	endTileColors := make([]int, 3)
 	for i := range adjTiles {
-		endTileColors[i] = m.faces[adjFace].tiles[adjTiles[i]]
+		endTileColors[i] = m.state[adjFace][adjTiles[i]]
 	}
 	var endColors [3]int
 	copy(endColors[:], endTileColors)
@@ -261,7 +277,7 @@ func (m *Megaminx) CW(face int) {
 
 		prevTileColors := make([]int, 3)
 		for j := range prevAdjTiles {
-			prevTileColors[j] = m.faces[prevFace].tiles[prevAdjTiles[j]]
+			prevTileColors[j] = m.state[prevFace][prevAdjTiles[j]]
 		}
 
 		curFace := m.faces[face].adj[i].color
@@ -269,31 +285,32 @@ func (m *Megaminx) CW(face int) {
 		curAdjTiles := m.faces[curFace].adj[curAdjRow].colors
 
 		for k, j := range curAdjTiles {
-			m.faces[curFace].tiles[j] = prevTileColors[k]
+			m.state[curFace][j] = prevTileColors[k]
 		}
 	}
 	endFace := m.faces[face].adj[4].color
 	endAdjRow := m.outerIndex(face, endFace)
 	endAdjTiles := m.faces[endFace].adj[endAdjRow].colors
 	for k, j := range endAdjTiles {
-		m.faces[endFace].tiles[j] = endColors[k]
+		m.state[endFace][j] = endColors[k]
 	}
+
 }
 
-func (f *Face) shiftTilesRight() {
-	end := f.tiles[len(f.tiles)-1]
-	for i := len(f.tiles) - 1; i > 0; i-- {
-		f.tiles[i] = f.tiles[i-1]
+func (s *State) shiftTilesRight(face int) {
+	end := s[face][9]
+	for i := 8; i > 0; i-- {
+		s[face][i] = s[face][i-1]
 	}
-	f.tiles[0] = end
+	s[face][0] = end
 }
 
-func (f *Face) shiftTilesLeft() {
-	start := f.tiles[0]
-	for i := 0; i < len(f.tiles)-1; i++ {
-		f.tiles[i] = f.tiles[i+1]
+func (s *State) shiftTilesLeft(face int) {
+	start := s[face][0]
+	for i := 0; i < 9; i++ {
+		s[face][i] = s[face][i+1]
 	}
-	f.tiles[len(f.tiles)-1] = start
+	s[face][9] = start
 }
 
 // outerIndex returns the index of face f1 in the adjacency array of f2, an operation used in rotation
@@ -315,7 +332,7 @@ func PaintFace(vs []ebiten.Vertex, face int) {
 	}
 	i := 6 // index into vs
 
-	tiles := megaminx.faces[face].tiles
+	tiles := megaminx.state[face]
 	// paint the first five vertices in vs with tiles[0], next five with tiles[1], ...
 	for j := 0; j < len(tiles); j++ {
 		for k := 0; k < 5; k++ {
