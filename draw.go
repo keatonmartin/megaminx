@@ -6,10 +6,6 @@ import (
 	"math"
 )
 
-func degToR(deg float64) float64 {
-	return deg * (math.Pi / 180)
-}
-
 // rotateVertices rotates the vertices in vs with respect to the origin
 // by r radians. Equivalent to multiplication with rotation matrix.
 func rotateVertices(vs []ebiten.Vertex, r float64) {

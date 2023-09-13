@@ -24,21 +24,12 @@ var numToColor = map[int]color.RGBA{
 	11: {0xf3, 0xe5, 0xab, 0xff}, // vanilla
 }
 
+// State contains all state needed to specify a Megaminx; the tile colors of each of the 12 faces
 type State [12][10]int
 
 type Megaminx struct {
-	faces [12]Face
+	faces [12][5]int
 	state State
-}
-
-type Face struct {
-	adj   [5]Edge // array of edges, where the first element is the "bottom" edge
-	tiles [10]int // hold the actual color of the tiles
-}
-
-type Edge struct {
-	color  int    // adjacent face's color
-	colors [3]int // array of indices into tiles in Face
 }
 
 // NewState generates the start state
@@ -57,148 +48,19 @@ func NewMegaminx() Megaminx {
 	s := NewState()
 	m := Megaminx{state: s}
 
-	// white face
-	m.faces[0] = Face{
-		adj: [5]Edge{
-			{1, [3]int{0, 1, 2}},
-			{2, [3]int{2, 3, 4}},
-			{3, [3]int{4, 5, 6}},
-			{4, [3]int{6, 7, 8}},
-			{5, [3]int{8, 9, 0}},
-		},
-		tiles: [10]int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	}
+	m.faces[0] = [5]int{1, 2, 3, 4, 5}   // white
+	m.faces[1] = [5]int{0, 5, 10, 9, 2}  // blue
+	m.faces[2] = [5]int{0, 1, 9, 8, 3}   // yellow
+	m.faces[3] = [5]int{0, 2, 8, 7, 4}   // purple
+	m.faces[4] = [5]int{0, 3, 7, 11, 5}  // green
+	m.faces[5] = [5]int{0, 4, 11, 10, 1} // red
+	m.faces[6] = [5]int{7, 8, 9, 10, 11} // gray
+	m.faces[7] = [5]int{6, 11, 4, 3, 8}  // cyan
+	m.faces[8] = [5]int{6, 7, 3, 2, 9}   // orange
+	m.faces[9] = [5]int{6, 8, 2, 1, 10}  // lime green
+	m.faces[10] = [5]int{6, 9, 1, 5, 11} // pink
+	m.faces[11] = [5]int{6, 10, 5, 4, 7} // vanilla
 
-	// blue face
-	m.faces[1] = Face{
-		adj: [5]Edge{
-			{0, [3]int{0, 1, 2}},
-			{5, [3]int{2, 3, 4}},
-			{10, [3]int{4, 5, 6}},
-			{9, [3]int{6, 7, 8}},
-			{2, [3]int{8, 9, 0}},
-		},
-		tiles: [10]int{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-	}
-
-	// yellow face
-	m.faces[2] = Face{
-		adj: [5]Edge{
-			{0, [3]int{0, 1, 2}},
-			{1, [3]int{2, 3, 4}},
-			{9, [3]int{4, 5, 6}},
-			{8, [3]int{6, 7, 8}},
-			{3, [3]int{8, 9, 0}},
-		},
-		tiles: [10]int{2, 2, 2, 2, 2, 2, 2, 2, 2, 2},
-	}
-
-	// purple face
-	m.faces[3] = Face{
-		adj: [5]Edge{
-			{0, [3]int{0, 1, 2}},
-			{2, [3]int{2, 3, 4}},
-			{8, [3]int{4, 5, 6}},
-			{7, [3]int{6, 7, 8}},
-			{4, [3]int{8, 9, 0}},
-		},
-		tiles: [10]int{3, 3, 3, 3, 3, 3, 3, 3, 3, 3},
-	}
-
-	// green face
-	m.faces[4] = Face{
-		adj: [5]Edge{
-			{0, [3]int{0, 1, 2}},
-			{3, [3]int{2, 3, 4}},
-			{7, [3]int{4, 5, 6}},
-			{11, [3]int{6, 7, 8}},
-			{5, [3]int{8, 9, 0}},
-		},
-		tiles: [10]int{4, 4, 4, 4, 4, 4, 4, 4, 4, 4},
-	}
-
-	// red face
-	m.faces[5] = Face{
-		adj: [5]Edge{
-			{0, [3]int{0, 1, 2}},
-			{4, [3]int{2, 3, 4}},
-			{11, [3]int{4, 5, 6}},
-			{10, [3]int{6, 7, 8}},
-			{1, [3]int{8, 9, 0}},
-		},
-		tiles: [10]int{5, 5, 5, 5, 5, 5, 5, 5, 5, 5},
-	}
-	// gray face
-	m.faces[6] = Face{
-		adj: [5]Edge{
-			{7, [3]int{0, 1, 2}},
-			{8, [3]int{2, 3, 4}},
-			{9, [3]int{4, 5, 6}},
-			{10, [3]int{6, 7, 8}},
-			{11, [3]int{8, 9, 0}},
-		},
-		tiles: [10]int{6, 6, 6, 6, 6, 6, 6, 6, 6, 6},
-	}
-
-	// cyan face
-	m.faces[7] = Face{
-		adj: [5]Edge{
-			{6, [3]int{0, 1, 2}},
-			{11, [3]int{2, 3, 4}},
-			{4, [3]int{4, 5, 6}},
-			{3, [3]int{6, 7, 8}},
-			{8, [3]int{8, 9, 0}},
-		},
-		tiles: [10]int{7, 7, 7, 7, 7, 7, 7, 7, 7, 7},
-	}
-
-	// orange face
-	m.faces[8] = Face{
-		adj: [5]Edge{
-			{6, [3]int{0, 1, 2}},
-			{7, [3]int{2, 3, 4}},
-			{3, [3]int{4, 5, 6}},
-			{2, [3]int{6, 7, 8}},
-			{9, [3]int{8, 9, 0}},
-		},
-		tiles: [10]int{8, 8, 8, 8, 8, 8, 8, 8, 8, 8},
-	}
-
-	// lime green face
-	m.faces[9] = Face{
-		adj: [5]Edge{
-			{6, [3]int{0, 1, 2}},
-			{8, [3]int{2, 3, 4}},
-			{2, [3]int{4, 5, 6}},
-			{1, [3]int{6, 7, 8}},
-			{10, [3]int{8, 9, 0}},
-		},
-		tiles: [10]int{9, 9, 9, 9, 9, 9, 9, 9, 9, 9},
-	}
-
-	// pink face
-	m.faces[10] = Face{
-		adj: [5]Edge{
-			{6, [3]int{0, 1, 2}},
-			{9, [3]int{2, 3, 4}},
-			{1, [3]int{4, 5, 6}},
-			{5, [3]int{6, 7, 8}},
-			{11, [3]int{8, 9, 0}},
-		},
-		tiles: [10]int{10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	}
-
-	// vanilla face
-	m.faces[11] = Face{
-		adj: [5]Edge{
-			{6, [3]int{0, 1, 2}},
-			{10, [3]int{2, 3, 4}},
-			{5, [3]int{4, 5, 6}},
-			{4, [3]int{6, 7, 8}},
-			{7, [3]int{8, 9, 0}},
-		},
-		tiles: [10]int{11, 11, 11, 11, 11, 11, 11, 11, 11, 11},
-	}
 	return m
 }
 
@@ -209,40 +71,35 @@ func (m *Megaminx) CCW(face int) {
 		m.state.shiftTilesRight(face)
 	}
 
-	adjFace := m.faces[face].adj[4].color // get last adjacent face
+	adjFace := m.faces[face][4] // get last adjacent face
 	adjRow := m.outerIndex(face, adjFace)
-	adjTiles := m.faces[adjFace].adj[adjRow].colors
+
 	endTileColors := make([]int, 3)
-	for i := range adjTiles {
-		endTileColors[i] = m.state[adjFace][adjTiles[i]]
+	for i := 0; i < 3; i++ {
+		endTileColors[i] = m.state[adjFace][((adjRow*2)+i)%10]
 	}
 	var endColors [3]int
 	copy(endColors[:], endTileColors)
 
 	for i := 4; i > 0; i-- {
-		prevFace := m.faces[face].adj[i-1].color
+		prevFace := m.faces[face][i-1]
 		prevAdjRow := m.outerIndex(face, prevFace)
-		prevAdjTiles := m.faces[prevFace].adj[prevAdjRow].colors
 		prevTileColors := make([]int, 3)
-		for j := range prevAdjTiles {
-			prevTileColors[j] = m.state[prevFace][prevAdjTiles[j]]
+		for j := 0; j < 3; j++ {
+			prevTileColors[j] = m.state[prevFace][((prevAdjRow*2)+j)%10]
 		}
 
-		curFace := m.faces[face].adj[i].color
+		curFace := m.faces[face][i]
 		curAdjRow := m.outerIndex(face, curFace)
-		curAdjTiles := m.faces[curFace].adj[curAdjRow].colors
-
-		for k, j := range curAdjTiles {
-			m.state[curFace][j] = prevTileColors[k]
+		for j := 0; j < 3; j++ {
+			m.state[curFace][((curAdjRow*2)+j)%10] = prevTileColors[j]
 		}
 	}
-	startFace := m.faces[face].adj[0].color
+	startFace := m.faces[face][0]
 	startAdjRow := m.outerIndex(face, startFace)
-	startAdjTiles := m.faces[startFace].adj[startAdjRow].colors
-	for k, j := range startAdjTiles {
-		m.state[startFace][j] = endColors[k]
+	for i := 0; i < 3; i++ {
+		m.state[startFace][((startAdjRow*2)+i)%10] = endColors[i]
 	}
-
 }
 
 func (m *Megaminx) CW(face int) {
@@ -252,54 +109,45 @@ func (m *Megaminx) CW(face int) {
 	}
 
 	// get first adjacent face color
-	adjFace := m.faces[face].adj[0].color
+	adjFace := m.faces[face][0]
 
 	// find where the current face is in the first adjacent face's adj array
 	adjRow := m.outerIndex(face, adjFace)
 
-	// get the adjacent tile colors
-	adjTiles := m.faces[adjFace].adj[adjRow].colors
-
 	// create a copy of them
 	endTileColors := make([]int, 3)
-	for i := range adjTiles {
-		endTileColors[i] = m.state[adjFace][adjTiles[i]]
+	for i := 0; i < 3; i++ {
+		endTileColors[i] = m.state[adjFace][((adjRow*2)+i)%10]
 	}
 	var endColors [3]int
 	copy(endColors[:], endTileColors)
 
 	for i := 0; i < 4; i++ {
 		// get the next face color in the adjacency array of current face
-		prevFace := m.faces[face].adj[i+1].color
+		prevFace := m.faces[face][i+1]
 		// find which edge the current face is adjacent to
 		prevAdjRow := m.outerIndex(face, prevFace)
-		prevAdjTiles := m.faces[prevFace].adj[prevAdjRow].colors
-
 		prevTileColors := make([]int, 3)
-		for j := range prevAdjTiles {
-			prevTileColors[j] = m.state[prevFace][prevAdjTiles[j]]
+		for j := 0; j < 3; j++ {
+			prevTileColors[j] = m.state[prevFace][((prevAdjRow*2)+j)%10]
 		}
 
-		curFace := m.faces[face].adj[i].color
+		curFace := m.faces[face][i]
 		curAdjRow := m.outerIndex(face, curFace)
-		curAdjTiles := m.faces[curFace].adj[curAdjRow].colors
-
-		for k, j := range curAdjTiles {
-			m.state[curFace][j] = prevTileColors[k]
+		for j := 0; j < 3; j++ {
+			m.state[curFace][((curAdjRow*2)+j)%10] = prevTileColors[j]
 		}
 	}
-	endFace := m.faces[face].adj[4].color
+	endFace := m.faces[face][4]
 	endAdjRow := m.outerIndex(face, endFace)
-	endAdjTiles := m.faces[endFace].adj[endAdjRow].colors
-	for k, j := range endAdjTiles {
-		m.state[endFace][j] = endColors[k]
+	for i := 0; i < 3; i++ {
+		m.state[endFace][((endAdjRow*2)+i)%10] = endColors[i]
 	}
-
 }
 
 func (s *State) shiftTilesRight(face int) {
 	end := s[face][9]
-	for i := 8; i > 0; i-- {
+	for i := 9; i > 0; i-- {
 		s[face][i] = s[face][i-1]
 	}
 	s[face][0] = end
@@ -315,8 +163,8 @@ func (s *State) shiftTilesLeft(face int) {
 
 // outerIndex returns the index of face f1 in the adjacency array of f2, an operation used in rotation
 func (m *Megaminx) outerIndex(f1, f2 int) int {
-	for i, e := range m.faces[f2].adj {
-		if e.color == f1 {
+	for i, e := range m.faces[f2] {
+		if e == f1 {
 			return i
 		}
 	}
