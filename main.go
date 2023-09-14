@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -20,24 +19,23 @@ var (
 	whiteImage = ebiten.NewImage(3, 3)
 )
 
-var megaminx Megaminx
-
 var selectors = make([][]ebiten.Vertex, 12)
 
 var rotations int
 
 func init() {
 
-	rot := flag.Int("rotations", 20, "the number of clockwise rotations made when randomizing the puzzle")
-	flag.Parse()
-	rotations = *rot
+	// rot := flag.Int("rotations", 20, "the number of clockwise rotations made when randomizing the puzzle")
+	// flag.Parse()
+	// rotations = *rot
 	rand.Seed(time.Now().UnixNano()) // seed random number generator for randomizer
 	whiteImage.Fill(color.White)
-	megaminx = NewMegaminx()
+	state = NewState()
 }
 
+var state State
+
 type Game struct {
-	m        Megaminx
 	frame    int
 	selected int
 }
@@ -57,21 +55,26 @@ func (g *Game) Update() error {
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
-		megaminx.CW(g.selected)
+		state.CW(g.selected)
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) {
-		megaminx.CCW(g.selected)
+		state.CCW(g.selected)
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyT) {
-		megaminx = NewMegaminx()
-		randomize(rotations)
+		state = NewState()
+		state.randomize(rotations)
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyR) {
-		megaminx = NewMegaminx()
+		state = NewState()
 	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
+		Test(14)
+	}
+
 	return nil
 }
 
@@ -95,7 +98,6 @@ func main() {
 	ebiten.SetWindowSize(screenWidth*2, screenHeight*2)
 	ebiten.SetWindowTitle("Megaminx Viewer")
 	if err := ebiten.RunGame(&Game{
-		m:        NewMegaminx(),
 		frame:    0,
 		selected: 0,
 	}); err != nil {

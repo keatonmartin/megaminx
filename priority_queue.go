@@ -12,7 +12,7 @@ func (m *MinHeap) Len() int {
 
 // Less defines a comparison operator for elements, uses the evaluation of G and H for that node
 func (m *MinHeap) Less(i, j int) bool {
-	return G((*m)[i])+H((*m)[j]) < G((*m)[j])+H((*m)[j])
+	return (*m)[i].g+(*m)[i].h < (*m)[j].g+(*m)[j].h
 }
 
 // Swap swaps elements at index i and j
@@ -43,13 +43,13 @@ func (m *MinHeap) MinHeapify(i int) {
 	r := Right(i)
 
 	var smallest int
-	if l <= m.Len() && m.Less(l, i) {
+	if l < m.Len() && m.Less(l, i) {
 		smallest = l
 	} else {
 		smallest = i
 	}
 
-	if r <= m.Len() && m.Less(r, smallest) {
+	if r < m.Len() && m.Less(r, smallest) {
 		smallest = r
 	}
 
@@ -64,7 +64,9 @@ func (m *MinHeap) Pop() Node {
 	min := (*m)[0]            // get min element
 	(*m)[0] = (*m)[m.Len()-1] // put last element first
 	*m = (*m)[:m.Len()-1]     // decrease size of array
-	m.MinHeapify(0)           // sort first element back in heap
+	if m.Len() > 0 {
+		m.MinHeapify(0) // sort first element back in heap
+	}
 	return min
 }
 
