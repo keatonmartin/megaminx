@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image/color"
 	"math/rand"
+	"time"
 )
 
 var numToColor = map[int]color.RGBA{
@@ -196,5 +198,22 @@ func (s *State) randomize(moves int) {
 	for i := 0; i < moves; i++ {
 		face := rand.Intn(12)
 		s.CW(face)
+	}
+}
+
+// unwind will accept a solved node and display the path from start to solved
+func unwind(node Node) {
+	fmt.Println("unwinding...")
+	var stack []Node
+	for {
+		stack = append(stack, node)
+		if node.prev == nil {
+			break
+		}
+		node = *(node.prev)
+	}
+	for len(stack) > 0 {
+		state = *(stack[len(stack)-1]).s
+		time.Sleep(time.Second)
 	}
 }

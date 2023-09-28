@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -13,6 +14,7 @@ import (
 const (
 	screenWidth  = 450
 	screenHeight = 300
+	rotations    = 10
 )
 
 var (
@@ -21,13 +23,12 @@ var (
 
 var selectors = make([][]ebiten.Vertex, 12)
 
-var rotations int
+var gui bool
 
 func init() {
-
-	// rot := flag.Int("rotations", 20, "the number of clockwise rotations made when randomizing the puzzle")
-	// flag.Parse()
-	// rotations = *rot
+	guiFlag := flag.Bool("gui", false, "if gui flag is set, the gui will be displayed. otherwise, the solver will be ran.")
+	flag.Parse()
+	gui = *guiFlag
 	rand.Seed(time.Now().UnixNano()) // seed random number generator for randomizer
 	whiteImage.Fill(color.White)
 	state = NewState()
@@ -38,9 +39,17 @@ var state State
 type Game struct {
 	frame    int
 	selected int
+	stack    []Node // stack of nodes to unwind. if len(stack) == 0, no nodes to unwind
 }
 
 func (g *Game) Update() error {
+	g.frame = (g.frame + 1) % 60
+
+	if g.frame%60 == 0 && len(g.stack) != 0 {
+		state = *(g.stack[len(g.stack)-1]).s
+		g.stack = g.stack[:len(g.stack)-1] // pop off last element in stack
+	}
+
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) { // if left click just pressed
 		// figure out where
 		xi, yi := ebiten.CursorPosition()
@@ -65,14 +74,20 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyT) {
 		state = NewState()
 		state.randomize(rotations)
+		_, node := Solve(state)
+		var stack []Node
+		for {
+			stack = append(stack, node)
+			if node.prev == nil {
+				break
+			}
+			node = *(node.prev)
+		}
+		g.stack = stack
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyR) {
 		state = NewState()
-	}
-
-	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
-		Test(14)
 	}
 
 	return nil
@@ -103,4 +118,5 @@ func main() {
 	}); err != nil {
 		log.Fatal(err)
 	}
+
 }
