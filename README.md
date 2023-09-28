@@ -11,3 +11,5 @@ Otherwise, follow this guide: https://ebitengine.org/en/documents/install.html
 3. Run `go get` to install all dependencies for this project
 4. `go build .` to build the executable
 5. `./megaminx` to run it.
+6. `./megaminx -gui` to run it with the GUI. Pressing t will scramble the puzzle and solve it using A*
+animating the solution
